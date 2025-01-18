@@ -15,30 +15,27 @@ services:
 before_script:
   - apk add --no-cache maven docker-compose
 
+image: ruby:3.1-alpine
+
 build:
   stage: build
   script:
-    # Build the Docker image for order-service
     - docker build -t $CI_REGISTRY_IMAGE/order-service:latest -f ./order-service/Dockerfile ./order-service
-    # Build the Docker image for stock-service
     - docker build -t $CI_REGISTRY_IMAGE/stock-service:latest -f ./stock-service/Dockerfile ./stock-service
   artifacts:
     paths:
       - order-service/target/
       - stock-service/target/
   only:
-    - main # Adjust to your default branch
+    - main
 
 test:
   stage: test
   script:
-    # Pull the built Docker images
     - docker-compose up -d
-    # Run integration tests
     - mvn -f order-service/pom.xml test
     - mvn -f stock-service/pom.xml test
   after_script:
-    # Clean up services
     - docker-compose down -v
 
 deploy:
