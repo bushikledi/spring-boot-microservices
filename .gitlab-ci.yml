@@ -44,6 +44,7 @@ test:
   only:
     - main
 
+# Deploy Stage
 deploy:
   stage: deploy
   script:
