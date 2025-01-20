@@ -6,8 +6,13 @@ services:
       - "5672:5672"
       - "15672:15672"
     environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
+      RABBITMQ_DEFAULT_USER: dummyuser
+      RABBITMQ_DEFAULT_PASS: dummypass
+    healthcheck:
+      test: ["CMD-SHELL", "rabbitmqctl status || exit 1"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - app-network
 
@@ -17,11 +22,16 @@ services:
     ports:
       - "5433:5432"
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dummypass
+      POSTGRES_USER: dummyuser
       POSTGRES_DB: order_db
     volumes:
       - order-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dummyuser -d order_db -h localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - app-network
 
@@ -31,11 +41,16 @@ services:
     ports:
       - "5434:5432"
     environment:
-      POSTGRES_PASSWORD: password
-      POSTGRES_USER: root
+      POSTGRES_PASSWORD: dummypass
+      POSTGRES_USER: dummyuser
       POSTGRES_DB: stock_db
     volumes:
       - stock-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U dummyuser -d stock_db -h localhost"]
+      interval: 30s
+      timeout: 10s
+      retries: 5
     networks:
       - app-network
 
@@ -47,15 +62,17 @@ services:
       - "8080:8080"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://order-service-db:5432/order_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_USERNAME: dummyuser
+      SPRING_DATASOURCE_PASSWORD: dummypass
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      SPRING_RABBITMQ_USERNAME: dummyuser
+      SPRING_RABBITMQ_PASSWORD: dummypass
     depends_on:
-      - rabbitmq
-      - order-service-db
+      rabbitmq:
+        condition: service_healthy
+      order-service-db:
+        condition: service_healthy
     networks:
       - app-network
 
@@ -67,22 +84,24 @@ services:
       - "8081:8081"
     environment:
       SPRING_DATASOURCE_URL: jdbc:postgresql://stock-service-db:5432/stock_db
-      SPRING_DATASOURCE_USERNAME: root
-      SPRING_DATASOURCE_PASSWORD: password
+      SPRING_DATASOURCE_USERNAME: dummyuser
+      SPRING_DATASOURCE_PASSWORD: dummypass
       SPRING_RABBITMQ_HOST: rabbitmq
       SPRING_RABBITMQ_PORT: 5672
-      SPRING_RABBITMQ_USERNAME: guest
-      SPRING_RABBITMQ_PASSWORD: guest
+      SPRING_RABBITMQ_USERNAME: dummyuser
+      SPRING_RABBITMQ_PASSWORD: dummypass
     depends_on:
-      - rabbitmq
-      - stock-service-db
+      rabbitmq:
+        condition: service_healthy
+      stock-service-db:
+        condition: service_healthy
     networks:
       - app-network
-
-networks:
-  app-network:
-    driver: bridge
 
 volumes:
   order-db-data:
   stock-db-data:
+
+networks:
+  app-network:
+    driver: bridge
