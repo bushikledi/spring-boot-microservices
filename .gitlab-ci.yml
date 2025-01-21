@@ -25,12 +25,12 @@ build:
     - mvn -f stock-service/pom.xml clean package -DskipTests
     - docker build -t $CI_REGISTRY_IMAGE/order-service:latest -f ./order-service/Dockerfile ./order-service
     - docker build -t $CI_REGISTRY_IMAGE/stock-service:latest -f ./stock-service/Dockerfile ./stock-service
-  artifacts:
-    paths:
-      - order-service/target/*.jar
-      - stock-service/target/*.jar
+    - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    - docker push $CI_REGISTRY_IMAGE/order-service:latest
+    - docker push $CI_REGISTRY_IMAGE/stock-service:latest
   only:
     - main
+
 
 # Test Stage
 test:
@@ -48,10 +48,13 @@ test:
 deploy:
   stage: deploy
   script:
-    - docker images #added for logs
     - echo "$CI_REGISTRY_PASSWORD" | docker login -u "$CI_REGISTRY_USER" --password-stdin $CI_REGISTRY
+    - docker pull $CI_REGISTRY_IMAGE/order-service:latest
+    - docker pull $CI_REGISTRY_IMAGE/stock-service:latest
+    - docker images # Verify images are pulled successfully
     - docker push $CI_REGISTRY_IMAGE/order-service:latest
     - docker push $CI_REGISTRY_IMAGE/stock-service:latest
     - docker-compose -f docker-compose.yml up -d
   only:
     - main
+
