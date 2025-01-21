@@ -2,6 +2,7 @@ stages:
   - build
   - test
   - deploy
+  - security
 
 variables:
   MAVEN_CLI_OPTS: "-B -DskipTests=true"
@@ -41,6 +42,15 @@ test:
     - mvn -f stock-service/pom.xml test
   after_script:
     - docker-compose -f docker-compose.test.yml down -v
+  only:
+    - main
+
+# SAST Analysis Stage
+sast:
+  stage: security
+  script:
+    - mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+    - mvn sonar:sonar -Dsonar.projectKey=stock-service -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
   only:
     - main
 
