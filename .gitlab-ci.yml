@@ -1,8 +1,8 @@
 stages:
+  - security
   - build
   - test
   - deploy
-  - security
 
 variables:
   MAVEN_CLI_OPTS: "-B -DskipTests=true"
@@ -18,6 +18,15 @@ before_script:
 
 image: maven:3.9.5-eclipse-temurin-21-alpine
 
+# SAST Analysis Stage
+sast:
+  stage: security
+  script:
+    - mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+    - mvn sonar:sonar -Dsonar.projectKey=stock-service -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
+  only:
+    - main
+    
 # Build Stage
 build:
   stage: build
@@ -42,15 +51,6 @@ test:
     - mvn -f stock-service/pom.xml test
   after_script:
     - docker-compose -f docker-compose.test.yml down -v
-  only:
-    - main
-
-# SAST Analysis Stage
-sast:
-  stage: security
-  script:
-    - mvn sonar:sonar -Dsonar.projectKey=order-service -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
-    - mvn sonar:sonar -Dsonar.projectKey=stock-service -Dsonar.host.url=$SONAR_HOST_URL -Dsonar.login=$SONAR_TOKEN
   only:
     - main
 
