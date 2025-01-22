@@ -22,9 +22,8 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 # DAST Stage
 dast:
   stage: security_dast
-  image: zaproxy/zap-stable
+  image: owasp/zap2docker-stable:latest
   before_script:
-    - apk add --no-cache docker-compose
     - docker-compose up -d
     - sleep 30
   script:
