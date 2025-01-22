@@ -1,6 +1,6 @@
 stages:
-  - dast
-  - sast
+  - security_dast
+  - security_sast
   - build
   - test
   - deploy
@@ -21,7 +21,7 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 
 # DAST Stage
 dast:
-  stage: dast
+  stage: security_dast
   image: owasp/zap2docker-stable
   before_script:
     # Start the services using docker-compose
@@ -46,7 +46,7 @@ dast:
 
 # SAST Analysis Stage
 sast:
-  stage: sast
+  stage: security_sast
   script:
     # Run Sonar analysis for order-service with updated project key
     - |
