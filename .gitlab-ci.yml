@@ -22,29 +22,27 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 # DAST Stage
 dast:
   stage: dast
+  image: owasp/zap2docker-stable
   before_script:
-    # Install OWASP ZAP CLI and Java 21
-    - apk add --no-cache wget openjdk21
-    - wget -q https://github.com/zaproxy/zaproxy/releases/download/v2.12.0/ZAP_2.12.0_Linux.tar.gz
-    - tar -xzf ZAP_2.12.0_Linux.tar.gz -C /opt
-    - export PATH=$PATH:/opt/ZAP_2.12.0
-  script:
     # Start the services using docker-compose
     - docker-compose up -d
-    # Wait for the services to become healthy
+    # Wait for the services to become healthy (you can adjust the sleep time as needed)
     - sleep 30
-    # Run ZAP scan on both order-service (8080) and stock-service (8081)
-    - zap.sh -cmd -quickscan -r zap-report-order.html http://order-service:8080
-    - zap.sh -cmd -quickscan -r zap-report-stock.html http://stock-service:8081
-    # Save both reports as artifacts
-    - mv zap-report-order.html $CI_PROJECT_DIR/zap-report-order.html
-    - mv zap-report-stock.html $CI_PROJECT_DIR/zap-report-stock.html
+  script:
+    # Run ZAP scan on order-service (8080)
+    - zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
+    # Run ZAP scan on stock-service (8081)
+    - zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
+  after_script:
+    # Shutdown the services after the scan
+    - docker-compose down
   artifacts:
     paths:
       - zap-report-order.html
       - zap-report-stock.html
   only:
     - main
+
 
 # SAST Analysis Stage
 sast:
