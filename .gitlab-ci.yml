@@ -23,12 +23,12 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 dast:
   stage: security_dast
   image: zaproxy/zap-stable
+  before_script:
+    - apt-get update && apt-get install -y docker-compose
   script:
     - docker-compose -f docker-compose.yml up -d
     - sleep 30
-    # Run ZAP scan on order-service (8080)
     - zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
-    # Run ZAP scan on stock-service (8081)
     - zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
   after_script:
     - docker-compose -f docker-compose.yml down -v
@@ -38,6 +38,7 @@ dast:
       - zap-report-stock.html
   only:
     - main
+
 
 
 
