@@ -22,27 +22,29 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 # DAST Stage
 dast:
   stage: security_dast
-  services:
-    - docker:dind
+  image:
+    name: owasp/zap2docker-stable:latest
+    entrypoint: [""]
   script:
-    - docker pull zaproxy/zap-stable
     - docker-compose -f docker-compose.yml up -d
-    - sleep 30
-    - mkdir -p zap-reports
-    - chmod 777 zap-reports
-    # Run ZAP scan on order-service and save report in mounted directory
-    - docker run --rm --network="app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
-    # Run ZAP scan on stock-service and save report in mounted directory
-    - docker run --rm --network="app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
-  after_script:
-    # Shut down services
-    - docker-compose -f docker-compose.yml down -v
-  artifacts:
-    paths:
-      - zap-reports/zap-report-order.html
-      - zap-reports/zap-report-stock.html
+    - bash zap_full_scan.sh
+    - docker-compose down
   only:
-    - main
+    refs:
+      - branches
+  variables:
+    CI_PROJECT_DIR: ${CI_PROJECT_DIR} 
+    ZAP_ALERT_REPORT: zap-alert-report.md 
+    ZAP_REPORT: zap-full-scan-report 
+  artifacts:
+    when: always
+    expire_in: 1 week
+    paths:
+      - ${CI_PROJECT_DIR}/${ZAP_REPORT}-order.html
+      - ${CI_PROJECT_DIR}/${ZAP_ALERT_REPORT}-order.md
+      - ${CI_PROJECT_DIR}/${ZAP_REPORT}-stock.html
+      - ${CI_PROJECT_DIR}/${ZAP_ALERT_REPORT}-stock.md
+
 
 
 # SAST Analysis Stage
