@@ -28,13 +28,12 @@ dast:
     - docker pull zaproxy/zap-stable
     - docker-compose -f docker-compose.yml up -d
     - sleep 30
-    # Create a local directory for ZAP reports and set permissions
     - mkdir -p zap-reports
     - chmod 777 zap-reports
     # Run ZAP scan on order-service and save report in mounted directory
-    - docker run --rm --network="spring-boot-microservices_default" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
+    - docker run --rm --network="app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
     # Run ZAP scan on stock-service and save report in mounted directory
-    - docker run --rm --network="spring-boot-microservices_default" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
+    - docker run --rm --network="app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
   after_script:
     # Shut down services
     - docker-compose -f docker-compose.yml down -v
@@ -44,7 +43,6 @@ dast:
       - zap-reports/zap-report-stock.html
   only:
     - main
-
 
 
 # SAST Analysis Stage
