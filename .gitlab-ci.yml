@@ -28,19 +28,21 @@ dast:
     - docker pull zaproxy/zap-stable
     - docker-compose -f docker-compose.yml up -d
     - sleep 30
-    # Run ZAP scan on order-service
-    - docker run --rm --network=host zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
-    # Run ZAP scan on stock-service
-    - docker run --rm --network=host zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
+    - mkdir -p zap-reports
+    # Run ZAP scan on order-service and save report in mounted directory
+    - docker run --rm --network=host -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
+    # Run ZAP scan on stock-service and save report in mounted directory
+    - docker run --rm --network=host -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
   after_script:
     # Shut down services
     - docker-compose -f docker-compose.yml down -v
   artifacts:
     paths:
-      - zap-report-order.html
-      - zap-report-stock.html
+      - zap-reports/zap-report-order.html
+      - zap-reports/zap-report-stock.html
   only:
     - main
+
 
 # SAST Analysis Stage
 sast:
