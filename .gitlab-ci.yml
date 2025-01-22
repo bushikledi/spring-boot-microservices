@@ -22,7 +22,7 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 # DAST Stage
 dast:
   stage: security_dast
-  image: owasp/zap2docker-stable
+  image: zaproxy/zap-stable
   before_script:
     # Start the services using docker-compose
     - docker-compose up -d
