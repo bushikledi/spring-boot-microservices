@@ -22,22 +22,23 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 sast:
   stage: security
   script:
-    # Run Sonar analysis for order-service
+    # Run Sonar analysis for order-service with updated project key
     - |
       cd order-service && \
       mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.projectKey=order-service \
+        -Dsonar.projectKey=gitlab-1_gitlab \
         -Dsonar.host.url=$SONAR_HOST_URL \
         -Dsonar.login=$SONAR_TOKEN
-    # Run Sonar analysis for stock-service
+    # Run Sonar analysis for stock-service with updated project key
     - |
       cd ../stock-service && \
       mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.projectKey=stock-service \
+        -Dsonar.projectKey=gitlab-1_gitlab \
         -Dsonar.host.url=$SONAR_HOST_URL \
         -Dsonar.login=$SONAR_TOKEN
   only:
     - main
+
 
 
 
