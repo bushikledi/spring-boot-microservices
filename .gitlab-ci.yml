@@ -24,9 +24,8 @@ dast:
   stage: security_dast
   image: zaproxy/zap-stable
   before_script:
-    # Start the services using docker-compose
+    - apk add --no-cache docker-compose
     - docker-compose up -d
-    # Wait for the services to become healthy (you can adjust the sleep time as needed)
     - sleep 30
   script:
     # Run ZAP scan on order-service (8080)
@@ -42,6 +41,7 @@ dast:
       - zap-report-stock.html
   only:
     - main
+
 
 
 # SAST Analysis Stage
