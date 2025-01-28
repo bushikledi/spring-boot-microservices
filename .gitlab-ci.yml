@@ -23,7 +23,7 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 dast:
   stage: security_dast
   script:
-    - docker-compose -f docker-compose.dast.yml up -d --wait
+    - docker-compose -f docker-compose.dast.yml up -d
   after_script:
     - docker-compose -f docker-compose.dast.yml down -v
 
