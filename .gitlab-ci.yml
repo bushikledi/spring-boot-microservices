@@ -11,6 +11,11 @@ variables:
   DOCKER_HOST: tcp://docker:2375/
   DOCKER_TLS_CERTDIR: ""
 
+cache:
+  key: ${CI_COMMIT_REF_SLUG}
+  paths:
+    - .m2/repository
+
 services:
   - docker:dind
 
@@ -26,32 +31,22 @@ dast:
     - docker-compose -f docker-compose.dast.yml up -d
   after_script:
     - docker-compose -f docker-compose.dast.yml down -v
-
-  artifacts:
-    paths:
-      - zap-reports/zap-report-order.html
-      - zap-reports/zap-report-stock.html
   only:
     - main
+
 
 # SAST Analysis Stage
 sast:
   stage: security_sast
   script:
-    # Run Sonar analysis for order-service with updated project key
-    - |
-      cd order-service && \
-      mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.projectKey=gitlab-1_gitlab \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.login=$SONAR_TOKEN
-    # Run Sonar analysis for stock-service with updated project key
-    - |
-      cd ../stock-service && \
-      mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
-        -Dsonar.projectKey=gitlab-1_gitlab \
-        -Dsonar.host.url=$SONAR_HOST_URL \
-        -Dsonar.login=$SONAR_TOKEN
+    - for service in order-service stock-service; do \
+         cd $service && \
+         mvn verify org.sonarsource.scanner.maven:sonar-maven-plugin:sonar \
+           -Dsonar.projectKey=gitlab-1_gitlab \
+           -Dsonar.host.url=$SONAR_HOST_URL \
+           -Dsonar.login=$SONAR_TOKEN && \
+         cd ..; \
+       done
   only:
     - main
 
@@ -90,8 +85,6 @@ deploy:
     - docker pull $CI_REGISTRY_IMAGE/order-service:latest
     - docker pull $CI_REGISTRY_IMAGE/stock-service:latest
     - docker images # Verify images are pulled successfully
-    - docker push $CI_REGISTRY_IMAGE/order-service:latest
-    - docker push $CI_REGISTRY_IMAGE/stock-service:latest
     - docker-compose -f docker-compose.yml up -d
   only:
     - main
