@@ -23,13 +23,6 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 dast:
   stage: security_dast
   script:
-    - if docker network inspect app-network > /dev/null 2>&1; then
-        echo "Network 'app-network' exists.";
-      else
-        echo "Network 'app-network' does not exist. Creating it now.";
-        docker network create app-network;
-      fi
-
     - docker-compose -f docker-compose.test.yml up -d --wait
 
     - mkdir -p zap-reports
@@ -41,7 +34,7 @@ dast:
 
   after_script:
     # Shut down services
-    - docker-compose -f docker-compose.yml down -v
+    - docker-compose -f docker-compose.test.yml down -v
 
   artifacts:
     paths:
