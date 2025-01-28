@@ -49,14 +49,15 @@ services:
       - app-network
     command: >
       bash -c "
-        zap-baseline.py -t http://order-service:8080 -r /zap/wrk/zap-report-order.html && 
-        zap-baseline.py -t http://stock-service:8081 -r /zap/wrk/zap-report-stock.html
+        zap-baseline.py -t http://order-service:8080 -r /zap/wrk/zap-report-order.html -d &&
+        zap-baseline.py -t http://stock-service:8081 -r /zap/wrk/zap-report-stock.html -d
       "
     volumes:
       - ./zap-reports:/zap/wrk
     depends_on:
       - order-service
       - stock-service
+
 
 networks:
   app-network:

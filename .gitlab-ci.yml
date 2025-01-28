@@ -23,18 +23,9 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 dast:
   stage: security_dast
   script:
-    - docker-compose -f docker-compose.test.yml up -d --wait
-
-    - mkdir -p zap-reports
-    - chmod 777 zap-reports
-
-    - docker run --rm --network="spring-boot-microservices_app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
-
-    - docker run --rm --network="spring-boot-microservices_app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
-
+    - docker-compose -f docker-compose.dast.yml up -d --wait
   after_script:
-    # Shut down services
-    - docker-compose -f docker-compose.test.yml down -v
+    - docker-compose -f docker-compose.dast.yml down -v
 
   artifacts:
     paths:
