@@ -26,6 +26,7 @@ dast:
     - docker network create app-network
 
     - docker-compose -f docker-compose.test.yml up -d --wait
+    - docker ps
 
     - mkdir -p zap-reports
     - chmod 777 zap-reports
