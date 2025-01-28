@@ -23,6 +23,8 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 dast:
   stage: security_dast
   script:
+    - docker network create app-network
+
     - docker-compose -f docker-compose.test.yml up -d --wait
 
     - mkdir -p zap-reports
