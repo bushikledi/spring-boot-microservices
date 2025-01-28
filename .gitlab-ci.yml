@@ -23,28 +23,12 @@ image: maven:3.9.5-eclipse-temurin-21-alpine
 dast:
   stage: security_dast
   script:
-    - docker network create app-network
-
-    - docker-compose -f docker-compose.test.yml up -d --wait
-    - docker ps
-
-    - mkdir -p zap-reports
-    - chmod 777 zap-reports
-
-    - docker run --rm --network="app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://order-service:8080 -r zap-report-order.html
-
-    - docker run --rm --network="app-network" -v "$(pwd)/zap-reports:/zap/wrk" zaproxy/zap-stable zap-baseline.py -t http://stock-service:8081 -r zap-report-stock.html
-
+    - docker-compose -f docker-compose.dast.yml up -d --wait
   after_script:
-    # Shut down services
-    - docker-compose -f docker-compose.test.yml down -v
-
-  artifacts:
-    paths:
-      - zap-reports/zap-report-order.html
-      - zap-reports/zap-report-stock.html
+    - docker-compose -f docker-compose.dast.yml down -v
   only:
     - main
+
 
 # SAST Analysis Stage
 sast:
